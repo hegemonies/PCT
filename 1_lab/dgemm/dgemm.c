@@ -10,7 +10,8 @@
 
 enum { 
     N = 8,
-    NREPS = 2
+    NREPS = 2,
+    BS = 2
 };
 
 double A[N * N], B[N * N], C[N * N];
@@ -43,14 +44,33 @@ void dgemm_transpose(double *a, double *b, double *c, int n)
 
 void dgemm_block(double *a, double *b, double *c, int n)
 {
-    /* TODO */
-}
+    int i, j, k;
+    int i0, j0, k0;
+    double *a0, *b0, *c0;
 
-void Rec_Mult(double *C, const double *A, const double *B, double n, double rowsize, int size_min_matx)
+    for (i = 0; i < n; i += BS) {
+        for (j = 0; j < n; j += BS) {
+            for (k = 0; k < n; k += BS) {
+                for (i0 = 0, c0 = (c + i * n + j),
+                a0 = (a + i * n + k); i0 < BS;
+                ++i0, c0 += n, a0 += n)
+                {
+                    for (k0 = 0, b0 = (b + k * n + j);
+                    k0 < BS; ++k0, b0 += n)
+                    {
+                        for (j0 = 0; j0 < BS; ++j0) {
+                            c0[j0] += a0[k0] * b0[j0];
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+void Rec_Mult(double *C, const double *A, const double *B, int n, int rowsize)
 {
-    if (n == size_min_matx)
+    if (n == 2)
     {
-        //C[0] += A[0] * B[0];
         const int d11 = 0;
         const int d12 = 1;
         const int d21 = rowsize;
@@ -69,26 +89,27 @@ void Rec_Mult(double *C, const double *A, const double *B, double n, double rows
         const int d22 = (n / 2) * (rowsize + 1);
  
         // C11 += A11 * B11
-        Rec_Mult(C + d11, A + d11, B + d11, n / 2, rowsize, size_min_matx);
+        Rec_Mult(C + d11, A + d11, B + d11, n / 2, rowsize);
         // C11 += A12 * B21
-        Rec_Mult(C + d11, A + d12, B + d21, n / 2, rowsize, size_min_matx);
+        Rec_Mult(C + d11, A + d12, B + d21, n / 2, rowsize);
  
         // C12 += A11 * B12
-        Rec_Mult(C + d12, A + d11, B + d12, n / 2, rowsize, size_min_matx);
+        Rec_Mult(C + d12, A + d11, B + d12, n / 2, rowsize);
         // C12 += A12 * B22
-        Rec_Mult(C + d12, A + d12, B + d22, n / 2, rowsize, size_min_matx);
+        Rec_Mult(C + d12, A + d12, B + d22, n / 2, rowsize);
  
         // C21 += A21 * B11
-        Rec_Mult(C + d21, A + d21, B + d11, n / 2, rowsize, size_min_matx);
+        Rec_Mult(C + d21, A + d21, B + d11, n / 2, rowsize);
         // C21 += A22 * B21
-        Rec_Mult(C + d21, A + d22, B + d21, n / 2, rowsize, size_min_matx);
+        Rec_Mult(C + d21, A + d22, B + d21, n / 2, rowsize);
  
         // C22 += A21 * B12
-        Rec_Mult(C + d22, A + d21, B + d12, n / 2, rowsize, size_min_matx);
+        Rec_Mult(C + d22, A + d21, B + d12, n / 2, rowsize);
         // C22 += A22 * B22
-        Rec_Mult(C + d22, A + d22, B + d22, n / 2, rowsize, size_min_matx);
+        Rec_Mult(C + d22, A + d22, B + d22, n / 2, rowsize);
     }
 }
+
 
 void init_matrix(double *a, double *b, double *c, int n)
 {
@@ -125,37 +146,43 @@ int main(int argc, char **argv)
     		
     init_matrix(A, B, C, N);
 
-    int size_min_matx = 2;
+    // int size_min_matx = 2;
 
-    print_matrix(A, N);
-    printf("\n");
-    print_matrix(B, N);
-
-    t = hpctimer_getwtime();
-    dgemm_def(A, B, C, N);
-    t = hpctimer_getwtime() - t;
-    printf("Elapsed time: %.6f sec.\n", t);
-    print_matrix(C, N);
+    // print_matrix(A, N);
+    // printf("\n");
+    // print_matrix(B, N);
 
     // t = hpctimer_getwtime();
+    // dgemm_def(A, B, C, N);
+    // t = hpctimer_getwtime() - t;
+    // printf("Elapsed time: %.6f sec.\n", t);
+    // print_matrix(C, N);
+
+    t = hpctimer_getwtime();
     for (i = 0; i < NREPS; i++) {
-        init_matrix(A, B, C, N);
-        t = hpctimer_getwtime();
         // dgemm_def(A, B, C, N);
         // dgemm_transpose(A, B, C, N);
-        //dgemm_transpose2(A, B, C, N);
-        //dgemm_block(A, B, C, N);
-        Rec_Mult(C, A, B, N, N, size_min_matx);
-        printf("size min matrix = %d\n", size_min_matx);
-        size_min_matx *= 2;
-        t = hpctimer_getwtime() - t;
-        printf("Elapsed time: %.6f sec.\n", t);
-        print_matrix(C, N);
+        // dgemm_transpose2(A, B, C, N);
+        dgemm_block(A, B, C, N);
     }
-    // t = hpctimer_getwtime() - t;
-    // t = t / NREPS;
-    
-    /*print_matrix(C, N);*/
+    t = hpctimer_getwtime() - t;
+    t = t / NREPS;
+    printf("Elapsed time: %.6f sec.\n", t);
+
+    print_matrix(C, N);    
+
+    init_matrix(A, B, C, N);
+
+    t = hpctimer_getwtime();
+    for (i = 0; i < NREPS; i++) {
+        // dgemm_block(A, B, C, N);
+        Rec_Mult(C, A, B, N, N);
+    }
+    t = hpctimer_getwtime() - t;
+    t = t / NREPS;
+    printf("Elapsed time: %.6f sec.\n", t);
+
+    print_matrix(C, N);
     
     // printf("Elapsed time: %.6f sec.\n", t);
 
