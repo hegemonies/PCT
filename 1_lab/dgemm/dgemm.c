@@ -9,10 +9,11 @@
 #include "hpctimer.h"
 
 enum { 
-    N = 8,
-    NREPS = 2,
-    BS = 2
+    N = 512,
+    NREPS = 2
 };
+
+int BS = 2;
 
 double A[N * N], B[N * N], C[N * N];
 
@@ -158,31 +159,50 @@ int main(int argc, char **argv)
     // printf("Elapsed time: %.6f sec.\n", t);
     // print_matrix(C, N);
 
+   // for (int j = 0; j < 7; j++) {
+        t = hpctimer_getwtime();
+        for (i = 0; i < NREPS; i++) {
+            dgemm_def(A, B, C, N);
+            //dgemm_transpose(A, B, C, N);
+            //dgemm_transpose2(A, B, C, N);
+            //dgemm_block(A, B, C, N);
+        }
+        t = hpctimer_getwtime() - t;
+        t = t / NREPS;
+        // printf("BS = %d\n", BS);
+        printf("Elapsed time: %.6f sec.\n", t);
+
+        //BS *= 2;
+    //}
+
     t = hpctimer_getwtime();
     for (i = 0; i < NREPS; i++) {
-        // dgemm_def(A, B, C, N);
-        // dgemm_transpose(A, B, C, N);
+        //dgemm_def(A, B, C, N);
+        dgemm_transpose(A, B, C, N);
         // dgemm_transpose2(A, B, C, N);
-        dgemm_block(A, B, C, N);
+        //dgemm_block(A, B, C, N);
     }
     t = hpctimer_getwtime() - t;
     t = t / NREPS;
+    // printf("BS = %d\n", BS);
     printf("Elapsed time: %.6f sec.\n", t);
 
-    print_matrix(C, N);    
+    // print_matrix(C, N);    
 
-    init_matrix(A, B, C, N);
+    // init_matrix(A, B, C, N);
 
-    t = hpctimer_getwtime();
-    for (i = 0; i < NREPS; i++) {
-        // dgemm_block(A, B, C, N);
-        Rec_Mult(C, A, B, N, N);
-    }
-    t = hpctimer_getwtime() - t;
-    t = t / NREPS;
-    printf("Elapsed time: %.6f sec.\n", t);
+    // printf("\nMy: \n");
 
-    print_matrix(C, N);
+    // t = hpctimer_getwtime();
+    // for (i = 0; i < NREPS; i++) {
+    //     // dgemm_block(A, B, C, N);
+    //     Rec_Mult(C, A, B, N, N);
+    // }
+    // t = hpctimer_getwtime() - t;
+    // t = t / NREPS;
+    // printf("Elapsed time: %.6f sec.\n", t);
+
+    // print_matrix(C, N);
     
     // printf("Elapsed time: %.6f sec.\n", t);
 
