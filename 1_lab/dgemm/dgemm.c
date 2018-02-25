@@ -175,6 +175,8 @@ int main(int argc, char **argv)
         //BS *= 2;
     //}
 
+    init_matrix(A, B, C, N);
+
     t = hpctimer_getwtime();
     for (i = 0; i < NREPS; i++) {
         //dgemm_def(A, B, C, N);
