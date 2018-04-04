@@ -9,8 +9,8 @@
 #include "hpctimer.h"
 
 enum { 
-    N = 512,
-    NREPS = 2
+    N = 1024,
+    NREPS = 3
 };
 
 int BS = 2;
@@ -162,8 +162,8 @@ int main(int argc, char **argv)
    // for (int j = 0; j < 7; j++) {
         t = hpctimer_getwtime();
         for (i = 0; i < NREPS; i++) {
-            dgemm_def(A, B, C, N);
-            //dgemm_transpose(A, B, C, N);
+            //dgemm_def(A, B, C, N);
+            dgemm_transpose(A, B, C, N);
             //dgemm_transpose2(A, B, C, N);
             //dgemm_block(A, B, C, N);
         }
@@ -174,7 +174,7 @@ int main(int argc, char **argv)
 
         //BS *= 2;
     //}
-
+/*
     init_matrix(A, B, C, N);
 
     t = hpctimer_getwtime();
@@ -188,7 +188,7 @@ int main(int argc, char **argv)
     t = t / NREPS;
     // printf("BS = %d\n", BS);
     printf("Elapsed time: %.6f sec.\n", t);
-
+*/
     // print_matrix(C, N);    
 
     // init_matrix(A, B, C, N);
