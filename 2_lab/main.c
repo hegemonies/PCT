@@ -3,35 +3,34 @@
 #include <omp.h>
 
 enum { 
-    N = 4,
+    N = 1024,
     NREPS = 3
 };
 
-double A[N * N], B[N * N], C[N * N];
+double A[N * N], B[N * N], C[N * N], C1[N * N];
 
 void init_matrix(double *a, double *b, double *c, int n)
 {
-	int i, j, k;
+	int i, j;
 
 	for (i = 0; i < n; i++) {
 		for (j = 0; j < n; j++) {
-			for (k = 0; k < n; k++) {
-                *(a + i * n + j) = 1.0;
-                *(b + i * n + j) = 2.0;
-                *(c + i * n + j) = 0.0;
-			}
+            *(a + i * n + j) = 1.0;
+            *(b + i * n + j) = 2.0;
+            *(c + i * n + j) = 0.0;
 		}
 	}
 }
 
-void dgemm_transpose(double *a, double *b, double *c, int st, int fn)
+void dgemm_transpose(double *a, double *b, double *c, int st, int fn, int n)
 {
     int i, j, k;
     
     for (i = st; i < fn; i++) {
-        for (k = 0; k < fn; k++) {
-            for (j = 0; j < fn; j++) {
-                *(c + i * fn + j) += *(a + i * fn + k) * *(b + k * fn + j);
+        for (k = 0; k < n; k++) {
+            for (j = 0; j < n; j++) {
+            	#pragma omp atomic
+                *(c + i * n + j) += *(a + i * n + k) * *(b + k * n + j);
             }
         }
     }
@@ -52,11 +51,57 @@ int main()
 {
 	init_matrix(A, B, C, N);
 
-	double C1[N * N];
 	init_matrix(A, B, C1, N);
-	dgemm_transpose(A, B, C1, 0, N);
+
+	double t = hpctimer_getwtime();
+	for (int i = 0; i < NREPS; i++) {
+		dgemm_transpose(A, B, C1, 0, N, N);
+	}
+	t = hpctimer_getwtime() - t;
+	t = t / NREPS;
+	printf("Elapsed time: %.6f sec.\n", t);
+
+	// dgemm_transpose(A, B, C1, 0, N);
+
+	// double t1[4] = { 0.0 };
+	double sum = 0.0;
+
+	double t1 = omp_get_wtime();
+	#pragma omp parallel num_threads(4) 
+	{
+		int num_threads = omp_get_num_threads();
+		int thread_num = omp_get_thread_num();
+		// printf("%d\n", num_threads);
+		// printf("%d\n\n", thread_num);
+
+		int num_rows_for_one_thread = N / num_threads;
+		int st = (num_rows_for_one_thread * thread_num);
+		int fn = num_rows_for_one_thread * (thread_num + 1);
+
+		// printf("%d :: %d = %d %d %d\n", num_threads, thread_num, num_rows_for_one_thread, st, fn);
+
+		// #pragma omp parallel for
+		// #pragma omp atomic
+		for (int i = 0; i < NREPS; i++) {
+			dgemm_transpose(A, B, C, st, fn, N);
+		}
+
+		#pragma omp atomic
+		sum += t1;
+	}
+	t1 = omp_get_wtime() - t1;
+	t1 = t1 / NREPS;
 
 
+	// double sum = 0;
+	// for (int i = 0; i < 4; i++) {
+	// 	sum += t1[i];
+	// }
+	sum /= 4;
+	printf("Elapsed time: %.6f sec.\n", t1);
+	printf("Speedup = %.4lf\n", t / t1);
+
+/*
 	double t = hpctimer_getwtime();
 	for (int i = 0; i < NREPS; i++) {
 		#pragma omp parallel
@@ -88,11 +133,11 @@ int main()
 	}
 	t = hpctimer_getwtime() - t;
 	t = t / NREPS;
+*/
+	// printMatrix(C, N);
+	// printMatrix(C1, N);
 
-	printMatrix(C, N);
-	printMatrix(C1, N);
-
-	printf("Elapsed time: %.6f sec.\n", t);
+	// printf("Elapsed time: %.6f sec.\n", t);
 
 	int check = 0;
 	for (int i = 0; i < N * N; i++) {
