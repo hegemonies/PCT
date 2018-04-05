@@ -3,11 +3,11 @@
 #include <omp.h>
 
 enum { 
-    N = 1024,
-    NREPS = 3
+	N = 15000,
+    NREPS = 1
 };
 
-double A[N * N], B[N * N], C[N * N], C1[N * N];
+double A[N * N], B[N], C[N], C1[N];
 
 void init_matrix(double *a, double *b, double *c, int n)
 {
@@ -18,6 +18,16 @@ void init_matrix(double *a, double *b, double *c, int n)
             *(a + i * n + j) = 1.0;
             *(b + i * n + j) = 2.0;
             *(c + i * n + j) = 0.0;
+		}
+	}
+}
+
+void dgemv(double *m, double *v, double *c, int st, int fn, int n)
+{
+	for (int i = st; i < fn; i++) {
+		for (int j = 0; j < n; j++) {
+			#pragma omp atomic
+			c[j] += *(m + i * n + j) * *(v + j);
 		}
 	}
 }
@@ -47,32 +57,58 @@ void printMatrix(double *a, int n)
 	printf("\n");
 }
 
+void printVector(double *v, int n)
+{
+	for (int i = 0; i < n; i++) {
+		printf("%.3lf ", v[i]);
+	}
+	printf("\n");
+}
+
+// int main()
+// {
+// 	#pragma omp parallel
+// 	{
+// 		printf("Hey, thread %d of %d\n", omp_get_thread_num(), omp_get_num_threads());
+// 	}
+
+// 	return 0;
+// }
+
+
 int main()
 {
-	init_matrix(A, B, C, N);
+	// init_matrix(A, B, C, N);
 
-	init_matrix(A, B, C1, N);
-
+	// init_matrix(A, B, C1, N);
+	for (int i = 0; i < N; i++) {
+		B[i] = 2.0;
+		C[i] = 0.0;
+		for (int j = 0; j < N; j++) {
+			*(A + i * N + j) = 1.0;
+		}
+	}
+/*
 	double t = hpctimer_getwtime();
 	for (int i = 0; i < NREPS; i++) {
-		dgemm_transpose(A, B, C1, 0, N, N);
+		// dgemm_transpose(A, B, C1, 0, N, N);
+		dgemv(A, B, C1, 0, N, N);
 	}
 	t = hpctimer_getwtime() - t;
 	t = t / NREPS;
 	printf("Elapsed time: %.6f sec.\n", t);
+*/
 
 	// dgemm_transpose(A, B, C1, 0, N);
 
-	// double t1[4] = { 0.0 };
-	double sum = 0.0;
-
+	printf("\nN = %d\n", N);
 	double t1 = omp_get_wtime();
-	#pragma omp parallel num_threads(4) 
+	#pragma omp parallel
 	{
+		#pragma omp master
+		printf("Num Threads = %d\n", omp_get_num_threads());
 		int num_threads = omp_get_num_threads();
 		int thread_num = omp_get_thread_num();
-		// printf("%d\n", num_threads);
-		// printf("%d\n\n", thread_num);
 
 		int num_rows_for_one_thread = N / num_threads;
 		int st = (num_rows_for_one_thread * thread_num);
@@ -80,72 +116,43 @@ int main()
 
 		// printf("%d :: %d = %d %d %d\n", num_threads, thread_num, num_rows_for_one_thread, st, fn);
 
-		// #pragma omp parallel for
-		// #pragma omp atomic
+		// for (int i = 0; i < NREPS; i++) {
+		// 	if (N % num_threads == 0 ) {
+		// 		dgemm_transpose(A, B, C, st, fn, N);
+		// 	} else if (thread_num == num_threads - 1) {
+		// 		dgemm_transpose(A, B, C, st, fn, N);
+		// 	}
+		// }
 		for (int i = 0; i < NREPS; i++) {
-			dgemm_transpose(A, B, C, st, fn, N);
+			if (N % num_threads == 0) {
+				dgemv(A, B, C, st, fn, N);
+			} else if (thread_num == num_threads - 1) {
+				dgemv(A, B, C, st, fn, N);
+			}
 		}
 
-		#pragma omp atomic
-		sum += t1;
+		#pragma omp barrier
 	}
 	t1 = omp_get_wtime() - t1;
 	t1 = t1 / NREPS;
 
 
-	// double sum = 0;
-	// for (int i = 0; i < 4; i++) {
-	// 	sum += t1[i];
-	// }
-	sum /= 4;
 	printf("Elapsed time: %.6f sec.\n", t1);
-	printf("Speedup = %.4lf\n", t / t1);
+	// printf("Speedup = %.4lf\n", t / t1);
 
-/*
-	double t = hpctimer_getwtime();
-	for (int i = 0; i < NREPS; i++) {
-		#pragma omp parallel
-		{
-			int num_threads = omp_get_num_threads();
-			int thread_num = omp_get_thread_num();
-			int num_rows_for_one_thread = N / num_threads;
 
-			if (thread_num == 0) {
-				dgemm_transpose(A, B, C, 0, num_rows_for_one_thread);
-			}
-			if (thread_num == 1) {
-				dgemm_transpose(A, B, C, num_rows_for_one_thread + 1, num_rows_for_one_thread * 2);
-			}
-			if (thread_num == 2) {
-				dgemm_transpose(A, B, C, (num_rows_for_one_thread * 2) + 1, num_rows_for_one_thread * 3);
-			}
-			if (thread_num == 3) {
-				dgemm_transpose(A, B, C, (num_rows_for_one_thread * 3) + 1, N);
-			}
-			// for (int j = 0; j < num_threads; j++) {
-			// 	if (thread_num == j) {
-			// 		dgemm_transpose(A, B, C, (num_rows_for_one_thread * j) + ((j == 0) ? 0 : 1), num_rows_for_one_thread * (j + 1));
-			// 	}
-			// }
-		}
-		
-		// for (int j = 0;)
-	}
-	t = hpctimer_getwtime() - t;
-	t = t / NREPS;
-*/
 	// printMatrix(C, N);
 	// printMatrix(C1, N);
 
 	// printf("Elapsed time: %.6f sec.\n", t);
 
-	int check = 0;
-	for (int i = 0; i < N * N; i++) {
-		if (C1[i] != C[i]) {
-			check++;
-		}
-	}
-	printf("Errors %d\n", check);
+	// int check = 0;
+	// for (int i = 0; i < N * N; i++) {
+	// 	if (C1[i] != C[i]) {
+	// 		check++;
+	// 	}
+	// }
+	// printf("Errors %d\n", check);
 
 	return 0;
 }
