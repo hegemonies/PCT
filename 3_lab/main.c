@@ -1,3 +1,5 @@
+#define _POSIX_C_SOURCE 1
+#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 #include <omp.h>
@@ -7,7 +9,7 @@ double function(double x)
 	return (1 - exp(0.7 / x)) / (2 + x);
 }
 
-int main()
+void Runge()
 {
 	double t = omp_get_wtime();
 	double a = 1.0;
@@ -53,6 +55,57 @@ int main()
 
 	t = omp_get_wtime() - t;
 	printf("Elapsed time (sec.): %.6f\n", t);
+}
+
+double getrand(unsigned int *seed)
+{
+	return (double)rand_r(seed) / RAND_MAX;
+}
+
+double func(double x, double y)
+{
+	return x / pow(y, 2);
+}
+
+void Monte_Carlo()
+{
+	double PI = 3.14159265358979323846;
+	int n = 10000000;
+
+	int in = 0;
+	double s = 0;
+
+	#pragma omp parallel
+	{
+		double s_loc = 0.0;
+		int in_loc = 0;
+		unsigned int seed = omp_get_thread_num();
+
+		#pragma omp for nowait
+		for (int i = 0; i < n; i++) {
+			double x = getrand(&seed);
+			double y = getrand(&seed);
+			if (y > 2 && y < 5) {
+				in++;
+				s_loc += func(x, y);
+			}
+		}
+		#pragma omp atomic
+		s += s_loc;
+		#pragma omp atomic
+		in += in_loc;
+	}
+
+	double v = PI * in / n;
+	double res = v * s / in;
+
+	printf("Result: %.12f, n %d \n", res, n);
+}
+
+int main()
+{
+	// Runge();
+	Monte_Carlo();
 
 	return 0;
 }
