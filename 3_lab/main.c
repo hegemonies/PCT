@@ -69,7 +69,6 @@ double func(double x, double y)
 
 void Monte_Carlo()
 {
-	double PI = 3.14159265358979323846;
 	int n = 10000000;
 
 	int in = 0;
@@ -84,8 +83,8 @@ void Monte_Carlo()
 		#pragma omp for nowait
 		for (int i = 0; i < n; i++) {
 			double x = getrand(&seed);
-			double y = getrand(&seed);
-			if (y > 2 && y < 5) {
+			double y = getrand(&seed) * 5.0;
+			if (y >= 2 && y <= 5) {
 				in++;
 				s_loc += func(x, y);
 			}
@@ -96,7 +95,7 @@ void Monte_Carlo()
 		in += in_loc;
 	}
 
-	double v = PI * in / n;
+	double v =  5.0 * in / n;
 	double res = v * s / in;
 
 	printf("Result: %.12f, n %d \n", res, n);
