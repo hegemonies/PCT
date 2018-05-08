@@ -93,32 +93,5 @@ int main()
 		free(for_test_arr);
 	}
 
-	// printf("orig_arr = ");
-	// for (int i = 0; i < N; i++)
-	// 	printf("%d ", orig_arr[i]);
-	// printf("\n");
-
-	// memcpy(for_test_arr, orig_arr, sizeof(int) * N);
-
-	// printf("for_test_arr = ");
-	// for (int i = 0; i < N; i++)
-	// 	printf("%d ", for_test_arr[i]);
-	// printf("\n");
-
-	// double t = omp_get_wtime();
-	// #pragma omp parallel num_threads(nthreads[0])
-	// {
-	// 	#pragma omp single
-	// 	quicksort(for_test_arr, 0, N - 1);
-	// }
-	// t = omp_get_wtime() - t;
-
-	// printf("After the quicksort = ");
-	// for (int i = 0; i < N; i++)
-	// 	printf("%d ", for_test_arr[i]);
-	// // printf("\n");
-
-	// printf("Time for %d threads = %.5lf\n", nthreads[0], t);
-
 	return 0;
 }
