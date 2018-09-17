@@ -1,0 +1,6 @@
+Time elapsed [count = 1]: 0.001848
+Stage 0 complete
+Time elapsed [count = 1024]: 0.002635
+Stage 1 complete
+Time elapsed [count = 1048576]: 0.172737
+Stage 2 complete
