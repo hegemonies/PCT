@@ -1,0 +1,8 @@
+#PBS -N 5_2_4_8
+#PBS -q debug
+#PBS -l nodes=4:ppn=8
+#PBS -j oe
+
+cd $PBS_O_WORKDIR
+mpiexec ./main
+
