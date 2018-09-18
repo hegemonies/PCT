@@ -18,21 +18,21 @@ int main(int argc, char **argv) {
 	double t;
 	t -= MPI_Wtime();
 	
-	MPI_Request requests[max_rank];
+	MPI_Request requests[max_rank * 2];
 
 	for (int i = 0; i < max_rank; i++) {
 		MPI_Isend(sbuf, sizeMessage, MPI_CHAR, i, 0, MPI_COMM_WORLD, &requests[i]);
 	}
 
-	MPI_status status;
+	MPI_Status status;
 	for (int i = 0; i < max_rank; i++) {
 		MPI_Probe(MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-		MPI_IRecv(rbuf, sizeMessage, MPI_CHAR, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &requests[status.MPI_SOURCE]);
+		MPI_Irecv(rbuf, sizeMessage, MPI_CHAR, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &requests[i + max_rank]);
 		printf("[%d] recv from [%d]\n", rank, status.MPI_SOURCE);
 	}
 
 	t += MPI_Wtime();
-	printf("[%d] Elapsed time is %lf", rank, t);
+	printf("[%d] Elapsed time is %lf\n", rank, t);
 	
 	MPI_Waitall(max_rank * 2, requests, MPI_STATUS_IGNORE);
 
