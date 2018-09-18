@@ -13,12 +13,14 @@ int main(int argc, char **argv) {
 	int sizeMessage = 1024;
 
 	char *rbuf;
+	double t;
 
 	for (int j = 0; j < 2; j++) {
 		rbuf = calloc(sizeMessage, sizeof(char));
+		t = 0;
+		t -= MPI_Wtime();
+
 		if (rank == 0) {
-			double t = 0;
-			t -= MPI_Wtime();
 			char *sbuf = calloc(sizeMessage, sizeof(char));
 			int st = (sizeMessage / max_rank) * rank;
 			int fn = st + (sizeMessage / max_rank);
@@ -38,7 +40,7 @@ int main(int argc, char **argv) {
 			printf("[%d] recv %d B\n", rank, count);
 			t += MPI_Wtime();
 			if (rank == 0) {
-				printf("[%d] Task %d is done\nElapsed time: %lf\n", rank, j, t);
+				printf("[%d] Task %d is done  Elapsed time: %lf\n", rank, j, t);
 			}
 		} else {
 			MPI_Status status;
@@ -46,9 +48,10 @@ int main(int argc, char **argv) {
 			int count;
 			MPI_Get_count(&status, MPI_CHAR, &count);
 			
-			printf("[%d] recv %d B\n", rank, count);
+			t += MPI_Wtime();
+			printf("[%d] Task %d is done  Elapsed time: %lf\n", rank, j, t);
 
-			rbuf = (char *) realloc(rbuf, sizeMessage);
+			// rbuf = (char *) realloc(rbuf, sizeMessage);
 		}
 		
 		sizeMessage *= 1024;

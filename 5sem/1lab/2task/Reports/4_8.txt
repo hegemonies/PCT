@@ -1,68 +1,66 @@
-[1] recv 1024 B
-[2] recv 1024 B
-[3] recv 1024 B
-[4] recv 1024 B
-[5] recv 1024 B
-[6] recv 1024 B
-[7] recv 1024 B
-[8] recv 1024 B
-[9] recv 1024 B
-[10] recv 1024 B
-[11] recv 1024 B
-[12] recv 1024 B
-[13] recv 1024 B
-[14] recv 1024 B
-[15] recv 1024 B
-[16] recv 1024 B
-[17] recv 1024 B
-[18] recv 1024 B
-[19] recv 1024 B
-[20] recv 1024 B
-[21] recv 1024 B
-[22] recv 1024 B
-[23] recv 1024 B
-[24] recv 1024 B
-[25] recv 1024 B
-[26] recv 1024 B
-[27] recv 1024 B
-[28] recv 1024 B
-[29] recv 1024 B
-[30] recv 1024 B
+[1] Task 0 is done  Elapsed time: 0.000128
+[2] Task 0 is done  Elapsed time: 0.000365
+[3] Task 0 is done  Elapsed time: 0.000207
+[4] Task 0 is done  Elapsed time: 0.000367
+[6] Task 0 is done  Elapsed time: 0.000235
+[5] Task 0 is done  Elapsed time: 0.000057
+[7] Task 0 is done  Elapsed time: 0.000029
+[8] Task 0 is done  Elapsed time: 0.003474
+[9] Task 0 is done  Elapsed time: 0.004007
+[16] Task 0 is done  Elapsed time: 0.007097
+[17] Task 0 is done  Elapsed time: 0.007953
+[18] Task 0 is done  Elapsed time: 0.008336
+[19] Task 0 is done  Elapsed time: 0.008371
+[20] Task 0 is done  Elapsed time: 0.008998
+[21] Task 0 is done  Elapsed time: 0.009238
+[22] Task 0 is done  Elapsed time: 0.009736
+[23] Task 0 is done  Elapsed time: 0.009955
+[24] Task 0 is done  Elapsed time: 0.002299
+[25] Task 0 is done  Elapsed time: 0.002720
+[26] Task 0 is done  Elapsed time: 0.003247
+[27] Task 0 is done  Elapsed time: 0.004014
+[28] Task 0 is done  Elapsed time: 0.004405
+[29] Task 0 is done  Elapsed time: 0.004848
+[30] Task 0 is done  Elapsed time: 0.005188
 [0] recv 1024 B
-[0] Task 0 is done
-Elapsed time: 0.017521
-[31] recv 1024 B
-[1] recv 1048576 B
-[2] recv 1048576 B
-[3] recv 1048576 B
-[4] recv 1048576 B
-[5] recv 1048576 B
-[6] recv 1048576 B
-[7] recv 1048576 B
-[8] recv 1048576 B
-[9] recv 1048576 B
-[10] recv 1048576 B
-[11] recv 1048576 B
-[12] recv 1048576 B
-[13] recv 1048576 B
-[14] recv 1048576 B
-[15] recv 1048576 B
-[16] recv 1048576 B
-[17] recv 1048576 B
-[18] recv 1048576 B
-[19] recv 1048576 B
-[20] recv 1048576 B
-[21] recv 1048576 B
-[22] recv 1048576 B
-[23] recv 1048576 B
-[24] recv 1048576 B
-[25] recv 1048576 B
-[26] recv 1048576 B
-[27] recv 1048576 B
-[28] recv 1048576 B
-[29] recv 1048576 B
-[30] recv 1048576 B
+[0] Task 0 is done  Elapsed time: 0.011320
+[31] Task 0 is done  Elapsed time: 0.005374
+[1] Task 1 is done  Elapsed time: 0.012374
+[10] Task 0 is done  Elapsed time: 0.004645
+[11] Task 0 is done  Elapsed time: 0.004899
+[12] Task 0 is done  Elapsed time: 0.005579
+[13] Task 0 is done  Elapsed time: 0.005931
+[14] Task 0 is done  Elapsed time: 0.006304
+[15] Task 0 is done  Elapsed time: 0.006415
+[2] Task 1 is done  Elapsed time: 0.014081
+[3] Task 1 is done  Elapsed time: 0.015700
+[4] Task 1 is done  Elapsed time: 0.017106
+[5] Task 1 is done  Elapsed time: 0.018366
+[6] Task 1 is done  Elapsed time: 0.020112
+[7] Task 1 is done  Elapsed time: 0.020714
+[8] Task 1 is done  Elapsed time: 0.029829
+[9] Task 1 is done  Elapsed time: 0.038581
+[10] Task 1 is done  Elapsed time: 0.047957
+[11] Task 1 is done  Elapsed time: 0.057334
+[12] Task 1 is done  Elapsed time: 0.066232
+[13] Task 1 is done  Elapsed time: 0.075955
+[14] Task 1 is done  Elapsed time: 0.085793
+[15] Task 1 is done  Elapsed time: 0.093924
+[16] Task 1 is done  Elapsed time: 0.102708
+[17] Task 1 is done  Elapsed time: 0.111642
+[18] Task 1 is done  Elapsed time: 0.120672
+[19] Task 1 is done  Elapsed time: 0.129671
+[20] Task 1 is done  Elapsed time: 0.138699
+[21] Task 1 is done  Elapsed time: 0.147832
+[22] Task 1 is done  Elapsed time: 0.156373
+[23] Task 1 is done  Elapsed time: 0.165626
+[24] Task 1 is done  Elapsed time: 0.174349
+[25] Task 1 is done  Elapsed time: 0.183506
+[26] Task 1 is done  Elapsed time: 0.191808
+[27] Task 1 is done  Elapsed time: 0.201106
+[28] Task 1 is done  Elapsed time: 0.210028
+[29] Task 1 is done  Elapsed time: 0.219631
+[30] Task 1 is done  Elapsed time: 0.227916
 [0] recv 1048576 B
-[0] Task 1 is done
-Elapsed time: 0.235950
-[31] recv 1048576 B
+[0] Task 1 is done  Elapsed time: 0.234803
+[31] Task 1 is done  Elapsed time: 0.236737
