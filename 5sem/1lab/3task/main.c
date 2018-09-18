@@ -28,11 +28,11 @@ int main(int argc, char **argv) {
 			}
 			MPI_Sendrecv(sbuf, sizeMessage, MPI_CHAR, 0, 0, rbuf, sizeMessage, MPI_CHAR, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 			t += MPI_Wtime();
-			printf("[%d] Task %d is done\nElapsed time: %lf\n", rank, j, t);
+			printf("[%d] Task %d is done  Elapsed time: %lf\n", rank, j, t);
 		} else {
 			MPI_Send(sbuf, sizeMessage, MPI_CHAR, 0, 0, MPI_COMM_WORLD);
 			t += MPI_Wtime();
-			printf("[%d] Task %d is done\nElapsed time: %lf\n", rank, j, t);
+			printf("[%d] Task %d is done  Elapsed time: %lf\n", rank, j, t);
 		}
 
 		sizeMessage *= 1024;
