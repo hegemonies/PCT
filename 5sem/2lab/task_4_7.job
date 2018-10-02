@@ -1,4 +1,4 @@
-#PBS -N 5_2-1_4-7
+#PBS -N 5_2-2_4-7
 #PBS -q debug
 #PBS -l nodes=4:ppn=7
 #PBS -j oe

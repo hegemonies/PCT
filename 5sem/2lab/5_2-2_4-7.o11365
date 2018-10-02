@@ -1,0 +1,4 @@
+Result: 0.399604818203, n 10000000 
+Elapsed time (sec.): 0.062553
+Result: 0.399562680925, n 100000000 
+Elapsed time (sec.): 0.314355

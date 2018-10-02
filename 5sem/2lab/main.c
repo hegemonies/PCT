@@ -10,10 +10,6 @@ double function(double x)
 
 void Runge(int rank, int max_rank)
 {
-	// double t;
-	// if (rank == 0) {
-	// 	t = MPI_Wtime();
-	// }
 	double a = 0.4;
 	double b = 1.5;
 	int n0 = 100000000;
@@ -43,68 +39,59 @@ void Runge(int rank, int max_rank)
 		}
 		
 		double res_sum = 0;
-		// MPI_Reduce(&sloc, &res_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 		MPI_Allreduce(&sloc, &sq[k], 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 		sq[k] *= h;
 		
 		if (n > n0) {
 			delta = fabs(sq[k] - sq[k ^ 1]) / 3.0;
 		}
-		/*
-		if (rank == 0) {
-			sq[k] += res_sum * h;
-			
-		}
-		*/
 	}
 
 	if (rank == 0) {
 		printf("Result: %.12f; Runge rule: EPS %e, n %d\n", sq[k], eps, n / 2);
-		// t += MPI_Wtime();
-		// printf("Elapsed time (sec.): %.6f\n", t);
 	}
+}
+
+double getrand(unsigned int *seed)
+{
+	return (double)rand_r(seed) / RAND_MAX;
 }
 
 double func(double x, double y)
 {
-	return x / pow(y, 2);
+	return exp(x - y);
 }
-/*
-void Monte_Carlo(int x)
-{
-	double t = omp_get_wtime();
-	int n = 100000000;
 
+void Monte_Carlo(int rank, int max_rank, int n)
+{
+	srand(rank);
 	int in = 0;
 	double s = 0;
 
-	{
-		printf("num threads = %d\n", omp_get_num_threads());
-		double s_loc = 0.0;
-		int in_loc = 0;
-		unsigned int seed = omp_get_thread_num();
+	double s_loc = 0.0;
+	int in_loc = 0;
+	unsigned int seed = rank;
 
-		for (int i = 0; i < n; i++) {
-			double x = getrand(&seed);
-			double y = getrand(&seed) * 5.0;
-			if (y >= 2) {
-				in_loc++;
-				s_loc += func(x, y);
-			}
-		}
-		s += s_loc;
-		in += in_loc;
+	int points_per_proc = n / max_rank;
+	int lb = rank * points_per_proc;
+	int ub = (rank == max_rank - 1) ? (n - 1) : (lb + points_per_proc - 1);
+
+	for (int i = lb; i < ub; i++) {
+		double x = getrand(&seed) * (-1);
+		double y = getrand(&seed);
+		in_loc++;
+		s_loc += func(x, y);
 	}
 
-	double v =  (5.0 * in) / n;
-	double res = (v * s) / in;
+	MPI_Reduce(&in_loc, &in, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(&s_loc, &s, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
-	t = MPI_Wtime() - t;
-
-	printf("Result: %.12f, n %d \n", res, n);
-	printf("Elapsed time = %lf\n", t);
+	if (rank == 0) {
+		double v =  (1.0 * in) / n;
+		double res = (v * s) / in;
+		printf("Result: %.12f, n %d \n", res, n);
+	}
 }
-*/
 
 int main(int argc, char **argv)
 {
@@ -115,7 +102,8 @@ int main(int argc, char **argv)
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &max_rank);
 	
-	double t;
+	double t = 0;
+
 	if (rank == 0) {
 		t -= MPI_Wtime();
 	}
@@ -125,6 +113,22 @@ int main(int argc, char **argv)
 	if (rank == 0) {
 		t += MPI_Wtime();
 		printf("Elapsed time (sec.): %.6f\n", t);
+	}
+
+	for (int i = 0; i < 2; i++) {
+		int n = pow(10, 7 + i);
+		t = 0;
+
+		if (rank == 0) {
+			t -= MPI_Wtime();
+		}
+
+		Monte_Carlo(rank, max_rank, n);
+		
+		if (rank == 0) {
+			t += MPI_Wtime();
+			printf("Elapsed time (sec.): %.6f\n", t);
+		}
 	}
 
 	MPI_Finalize();
