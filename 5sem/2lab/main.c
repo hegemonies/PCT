@@ -88,7 +88,7 @@ void Monte_Carlo(int rank, int max_rank, int n)
 
 	if (rank == 0) {
 		double v =  (1.0 * in) / n;
-		double res = (v * s) / in;
+		double res = (v * s) / in; 
 		printf("Result: %.12f, n %d \n", res, n);
 	}
 }
