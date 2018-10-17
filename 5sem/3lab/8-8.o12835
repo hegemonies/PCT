@@ -1,0 +1,4 @@
+DGEMV: matrix-vector product (c[m] = a[m, n] * b[n]; m = 28000, n = 28000)
+Memory used: 5981 MiB
+Elapsed time (64 procs): 0.519664 sec.
+Performance: 3.02 GFLOPS

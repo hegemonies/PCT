@@ -63,8 +63,8 @@ int main(int argc, char **argv)
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &max_rank);
 
-	int n = 32000;
-	int m = 32000;
+	int n = 45000;
+	int m = n;
 	
 	double t = 0;
 	t -= MPI_Wtime();

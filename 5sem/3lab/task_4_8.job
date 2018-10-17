@@ -1,6 +1,6 @@
-#PBS -N 8-2
+#PBS -N 8-4
 #PBS -q debug
-#PBS -l nodes=8:ppn=2
+#PBS -l nodes=8:ppn=4
 #PBS -j oe
 
 cd $PBS_O_WORKDIR
