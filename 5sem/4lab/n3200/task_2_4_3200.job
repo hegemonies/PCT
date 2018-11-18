@@ -1,0 +1,7 @@
+#PBS -N 2-4
+#PBS -q debug
+#PBS -l nodes=2:ppn=4
+#PBS -j oe
+
+cd $PBS_O_WORKDIR
+mpiexec ./main 3200 3200
