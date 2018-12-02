@@ -1,6 +1,6 @@
 #PBS -N test
 #PBS -q debug
-#PBS -l nodes=1:ppn=3
+#PBS -l nodes=1:ppn=2
 #PBS -j oe
 
 cd $PBS_O_WORKDIR
