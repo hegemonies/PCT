@@ -1,0 +1,20 @@
+
+0	INF	INF	563	
+848	0	754	576	
+956	858	0	INF	
+INF	900	451	0	
+
+sendsize[0] = 8
+displs[0] = 0
+sendsize[1] = 4
+displs[1] = 8
+sendsize[2] = 4
+displs[2] = 12
+
+rank = 0
+0	INF	INF	563	
+848	0	754	576	
+rank = 1
+956	858	0	INF	
+rank = 2
+INF	900	451	0	

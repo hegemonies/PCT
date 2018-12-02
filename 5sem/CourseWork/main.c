@@ -1,0 +1,156 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <mpi.h>
+#include <limits.h>
+#include <time.h>
+
+#define INF_PERC 40
+
+int min(int a, int b) {
+    return (a < b) ? a : b;
+}
+
+void data_random_init(int *arr, int n) {
+    srand(time(0));
+
+    int rnd;
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (i != j) {
+                rnd = rand() % 1000;
+                if ((rnd % 100) < INF_PERC) {
+                    arr[i * n + j] = INT_MAX;
+                } else {
+                    arr[i * n + j] = rnd + 1;
+                }
+            } else {
+                arr[i * n + j] = 0;
+            }
+        }
+    }
+}
+
+void serial_Floyd(int *arr, int n) {
+    for (int k = 0; k < n; k++) {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if ((arr[i * n + k] != INT_MAX) && (arr[k * n + j] != INT_MAX)) {
+                    arr[i * n + j] = min(arr[i * n + j], arr[i * n + k] + arr[k * n + j]);
+                }
+            }
+        }
+    }
+}
+
+void print_matrix(int *arr, int n) {
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (arr[i * n + j] == INT_MAX) {
+                printf("INF\t");
+            } else {
+                printf("%d\t", arr[i * n + j]);
+            }
+        }
+        printf("\n");
+    }
+}
+
+void par_print_matrix(int *arr, int n, int count_rows, int rank, int commsize) {
+    for (int p = 0; p < commsize; p++) {
+        if (p == rank) {
+            printf("rank = %d\n", rank);
+            for (int i = 0; i < count_rows; i++) {
+                for (int j = 0; j < n; j++) {
+                    if (arr[i * n + j] == INT_MAX) {
+                        printf("INF\t");
+                    } else {
+                        printf("%d\t", arr[i * n + j]);
+                    }
+                }
+                printf("\n");
+            }
+        }
+        MPI_Barrier(MPI_COMM_WORLD);
+    }
+}
+
+int main(int argc, char **argv) {
+    MPI_Init(&argc, &argv);
+	
+	int rank;
+	int commsize;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &commsize);
+
+
+    int n;
+    int rem;
+    int *arr;
+    int *recv_arr;
+    int count_rows;
+
+    if (rank == 0) {
+        n = (argc > 1) ? atoi(argv[1]) : 0;
+        if (n == 0) {
+            printf("How to run:\nmpiexec ./main <number of vertices>\n");
+            MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+        } else if (n < commsize) {
+            printf("Need number of vertices bigger then number of processors\n");
+            MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+        }
+
+        rem = n % commsize;
+
+        arr = calloc(sizeof(int), n * n);
+        data_random_init(arr, n);
+
+        if (rank == 0) {
+            print_matrix(arr, n);
+        }
+    }
+
+    MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+    count_rows = n / commsize;
+
+    if (rem > rank) {
+        count_rows++;
+    }
+
+    recv_arr = calloc(sizeof(int), n * count_rows);
+    // printf("rank = %d  n * count_rows = %d\n", rank, n * count_rows);
+
+    int *sendsize = calloc(sizeof(int), commsize);
+    int *displs = calloc(sizeof(int), commsize);
+
+    for (int i = 0; i < commsize; i++) {
+        sendsize[i] = (n * n) / commsize;
+
+        if (rem > 0) {
+            sendsize[i] += n;
+            rem--;
+        }
+
+        sendsize[i]--;
+
+        displs[i] = (i > 0) ? displs[i - 1] + sendsize[i - 1] : 0;
+        if (rank == 0) {
+            printf("sendsize[%d] = %d\n", i, sendsize[i]);
+            printf("displs[%d] = %d\n", i, displs[i]);
+        }
+    }
+
+    MPI_Scatterv(arr, sendsize, displs, MPI_INT, recv_arr, n * count_rows, MPI_INT, 0, MPI_COMM_WORLD);
+
+    MPI_Barrier(MPI_COMM_WORLD);
+    par_print_matrix(recv_arr, n, count_rows, rank, commsize);
+    printf("\n");
+    // if (rank == 0) {
+    //     print_matrix(arr, n);
+    // }
+
+	MPI_Finalize();
+
+    return 0;
+}
