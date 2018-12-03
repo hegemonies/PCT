@@ -125,27 +125,47 @@ void copy(int *start, int n, int *out) {
     }
 }
 
-void row_distr(int *arr, int n, int count_rows, int k, int *row) {
-    int row_rank;
-    int rest_rows = n;
-    int index = 0;
-    int num = n / commsize;
+void row_distr(int *arr, int n, int k, int *row) {
+    int *num = calloc(sizeof(int), commsize);
+    int *ind = calloc(sizeof(int), commsize);
+    int rem = n % commsize;
+    int count_rows = n / commsize;
 
-    for (row_rank = 1; row_rank < commsize + 1; row_rank++) {
-        if (k < index + num) {
+    for (int i = 0; i < commsize; i++) {
+        num[i] = count_rows;
+
+        if (rem > 0) {
+            num[i]++;
+            rem--;
+        }
+
+        ind[i] = (i > 0) ? ind[i - 1] + num[i - 1] : 0;
+
+        #if 0
+        if (rank == 0) {
+            printf("k = %d [%d] num[%d] = %d\t", k, rank, i, num[i]);
+            printf("ind[%d] = %d\n", i, ind[i]);
+        }
+        #endif
+    }
+
+    int row_rank = -1;
+
+    for (int i = 0; i < commsize; i++) {
+        if (k < ind[i] + num[i]) {
+            row_rank = i;
             break;
         }
-        rest_rows -= num;
-        index += num;
-        num = rest_rows / (commsize - row_rank);
     }
-    row_rank = row_rank - 1;
-    int row_num = k - index;
+
+    #if 1
+    printf("[%d] k = %d row_rank = %d\n", rank, k, row_rank);
+    #endif
 
     if (row_rank == rank) {
-        copy(&arr[row_num * n], n, row);
+        copy(&arr[(k - ind[rank]) * n], n, row);
     }
-    
+
     MPI_Bcast(row, n, MPI_INT, row_rank, MPI_COMM_WORLD);
 }
 
@@ -176,18 +196,18 @@ void par_Floyd(int *arr, int n, int count_rows) {
     int *row = calloc(sizeof(int), n);
 
     for (int k = 0; k < n; k++) {
-        // row_distr(arr, n, count_rows, k, row);
-        RowDistribution(arr, n, count_rows, k, row);
+        row_distr(arr, n, k, row);
+        // RowDistribution(arr, n, count_rows, k, row);
 
         #if 0
         for (int p = 0; p < commsize; p++) {
             if (p == rank) {
-                printf("rank = %d rr = ", rank);
+                printf("rank %d = ", rank);
                 for (int i = 0; i < n; i++) {
                     if (row[i] == INT_MAX) {
-                        printf("INF ");
+                        printf("INF\t");
                     } else {
-                        printf("%d\t\t", row[i]);
+                        printf("%d\t", row[i]);
                     }
                 }
                 printf("\n");
@@ -269,6 +289,7 @@ int main(int argc, char **argv) {
         // printf("\nafter floyd cp_arr:\n");
         // print_matrix(cp_arr, n);
     }
+
     MPI_Barrier(MPI_COMM_WORLD);
 
     MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -373,7 +394,7 @@ int main(int argc, char **argv) {
     //
 
     MPI_Barrier(MPI_COMM_WORLD);
-    #if 1
+    #if 0
     if (rank == 0) {
         printf("\nprint before par_Floyd\n");
     }
@@ -389,12 +410,13 @@ int main(int argc, char **argv) {
     count_rows = real_count_rows;
     MPI_Barrier(MPI_COMM_WORLD);
     par_Floyd(recv_arr, n, count_rows);
+    MPI_Barrier(MPI_COMM_WORLD);
 
     #if 0
     printf("FLOYD OK\n");
     #endif
 
-    #if 1
+    #if 0
     if (rank == 0) {
         printf("\nprint after par_Floyd\n");
     }
@@ -445,12 +467,12 @@ int main(int argc, char **argv) {
     count_rows = real_count_rows;
 
     #if 0
-    if (rank == 0) {
+    // if (rank == 0) {
         for (int i = 0; i < commsize; i++) {
             printf("recv_num[%d] = %d\n", i, recv_num[i]);
             printf("recv_ind[%d] = %d\n", i, recv_ind[i]);
         }
-    }
+    // }
     #endif
 
     // printf("[%d] step 0\n", rank);
@@ -463,10 +485,11 @@ int main(int argc, char **argv) {
     }
     #endif
     
+    // printf("[%d] before gather ok\n", rank);
+    MPI_Gatherv(recv_arr, real_count_rows * n /*recv_num[rank]*/, MPI_INT, arr, recv_num, recv_ind, MPI_INT, 0, MPI_COMM_WORLD);
+    // printf("[%d] after gather ok\n", rank);
 
-    MPI_Gatherv(recv_arr, /*real_count_rows * n*/ recv_num[rank], MPI_INT, arr, recv_num, recv_ind, MPI_INT, 0, MPI_COMM_WORLD);
-
-    #if 0
+    #if 1
     printf("[%d] GATHER OK\n", rank);
     #endif
 
