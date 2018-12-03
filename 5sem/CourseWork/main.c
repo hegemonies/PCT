@@ -209,6 +209,9 @@ int compare(int *a, int *b, int n) {
 
 int main(int argc, char **argv) {
     MPI_Init(&argc, &argv);
+
+    double t = 0;
+    t -= MPI_Wtime();
 	
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &commsize);
@@ -384,7 +387,7 @@ int main(int argc, char **argv) {
 
     count_rows = real_count_rows;
 
-    #if 1
+    #if 0
     if (rank == 0) {
         for (int i = 0; i < commsize; i++) {
             printf("recv_ind[%d] = %d\n", i, recv_ind[i]);
@@ -416,24 +419,23 @@ int main(int argc, char **argv) {
         MPI_Send(recv_arr, count_rows * n, MPI_INT, 0, 0, MPI_COMM_WORLD);
     }
 
-    #if 1
-    printf("[%d] GATHER OK\n", rank);
-    #endif
-
     MPI_Barrier(MPI_COMM_WORLD);
 
-    #if 1
+    #if 0
     if (rank == 0) {
         printf("\nprint ser after gather\n");
         print_matrix(arr, n);
     }
     #endif
 
+    t += MPI_Wtime();
+
     if (rank == 0) {
         if (compare(arr, cp_arr, n)) {
             printf("Compare is bad\n");
         } else {
             printf("Compare is good\n");
+            printf("Elapsed time is %.5f sec\n", t);
         }
     }
 
