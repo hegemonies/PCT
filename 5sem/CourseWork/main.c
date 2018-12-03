@@ -71,18 +71,6 @@ void serial_Floyd(int *arr, int n) {
     }
 }
 
-void SerialFloyd(int *arr, int n) {
-    int t1, t2;
-    for(int k = 0; k < n; k++)
-        for(int i = 0; i < n; i++)
-            for(int j = 0; j < n; j++)
-                if((arr[i * n + k] != INT_MAX) && (arr[k * n + j] != INT_MAX)) {
-                    t1 = arr[i * n + j];
-                    t2 = arr[i * n + k] + arr[k * n + j];
-                    arr[i * n + j] = min(t1, t2);
-                }
-} 
-
 void print_matrix(int *arr, int n) {
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
@@ -126,10 +114,6 @@ void copy(int *start, int n, int *out) {
 }
 
 void row_distr(int *arr, int n, int k, int *row) {
-    // int *num = calloc(sizeof(int), commsize);
-    // int *ind = calloc(sizeof(int), commsize);
-    // int *num = calloc(commsize, sizeof(int));
-    // int *ind = calloc(commsize, sizeof(int));
     int num[commsize];
     int ind[commsize];
     int rem = n % commsize;
@@ -174,7 +158,6 @@ void row_distr(int *arr, int n, int k, int *row) {
 }
 
 void par_Floyd(int *arr, int n, int count_rows) {
-    // int *row = calloc(sizeof(int), n);
     int *row = calloc(n, sizeof(int));
     if (!row) {
         MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
@@ -209,7 +192,7 @@ void par_Floyd(int *arr, int n, int count_rows) {
         }
     }
 
-    // free(row);
+    free(row);
 }
 
 int compare(int *a, int *b, int n) {
@@ -227,8 +210,6 @@ int compare(int *a, int *b, int n) {
 int main(int argc, char **argv) {
     MPI_Init(&argc, &argv);
 	
-	// int rank;
-	// int commsize;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &commsize);
 
@@ -250,20 +231,19 @@ int main(int argc, char **argv) {
             MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
         }
 
-        // arr = calloc(sizeof(int), n * n);
         arr = calloc(n * n, sizeof(int));
         if (!arr) {
             MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
         }
-        // data_random_init(arr, n);
-        dummy_data_init(arr, n);
 
-        #if 1
+        data_random_init(arr, n);
+        // dummy_data_init(arr, n);
+
+        #if 0
         printf("arr:\n");
         print_matrix(arr, n);
         #endif
 
-        // cp_arr = calloc(sizeof(int), n * n);
         cp_arr = calloc(n * n, sizeof(int));
         if (!cp_arr) {
             MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
@@ -274,19 +254,10 @@ int main(int argc, char **argv) {
         // print_matrix(cp_arr, n);
 
         serial_Floyd(cp_arr, n);
-        // SerialFloyd(cp_arr, n);
 
         // printf("\nafter floyd cp_arr:\n");
         // print_matrix(cp_arr, n);
     }
-
-
-    // if (rank != 0) {
-    //     arr = calloc(n * n, sizeof(int));
-    //     if (!arr) {
-    //         MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
-    //     }
-    // }
 
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -305,60 +276,16 @@ int main(int argc, char **argv) {
     printf("[%d] count_rows = %d\n", rank, count_rows);
     #endif
 
-    // recv_arr = calloc(sizeof(int), n * count_rows);
     recv_arr = calloc(n * count_rows, sizeof(int));
     if (!recv_arr) {
         MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
-    // printf("rank = %d  n * count_rows = %d\n", rank, n * count_rows);
 
-    // int *sendsize = calloc(sizeof(int), commsize);
-    // int *displs = calloc(sizeof(int), commsize);
-
-    // int f = 0;
-    // if (rem > 0) {
-    //     f = -1;
-    // }
-
-    // for (int i = 0; i < commsize; i++) {
-    //     sendsize[i] = (n * n) / commsize;
-    //     sendsize[i] += f;
-
-    //     if (rem > 0) {
-    //         sendsize[i] += n;
-    //         rem--;
-    //         // sendsize[i]--;
-    //     }
-
-    //     displs[i] = (i > 0) ? displs[i - 1] + sendsize[i - 1] : 0;
-        // if (rank == 0) {
-        //     printf("sendsize[%d] = %d\n", i, sendsize[i]);
-        //     printf("displs[%d] = %d\n", i, displs[i]);
-        // }
-    // }
-
-    // MPI_Scatterv(arr, sendsize, displs, MPI_INT, recv_arr, n * count_rows, MPI_INT, 0, MPI_COMM_WORLD);
-
-    //
-
-    // int *send_num = calloc(sizeof(int), commsize); 
-    // int *send_ind = calloc(sizeof(int), commsize);
     int *send_num = calloc(commsize, sizeof(int)); 
     int *send_ind = calloc(commsize, sizeof(int)); 
     if (!send_num || !send_ind) {
         MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
-    // int rest_rows = n;
-
-    // send_num[0] = count_rows * n; 
-    // send_ind[0] = 0;
-
-    // for (int i = 1; i < commsize; i++) {
-    //     rest_rows -= count_rows;
-    //     count_rows = rest_rows / (commsize - i);
-    //     send_num[i] = count_rows * n;
-    //     send_ind[i] = send_ind[i - 1] + send_num[i - 1];
-    // }
 
     int old_rem = rem;
     #if 0
@@ -398,7 +325,6 @@ int main(int argc, char **argv) {
     #endif
     
     MPI_Scatterv(arr, send_num, send_ind, MPI_INT, recv_arr, send_num[rank], MPI_INT, 0, MPI_COMM_WORLD); 
-    //
 
     MPI_Barrier(MPI_COMM_WORLD);
     #if 0
@@ -409,11 +335,6 @@ int main(int argc, char **argv) {
     printf("\n");
     #endif
 
-    // if (rank == 0) {
-    //     print_matrix(arr, n);
-    // }
-
-    // count_rows = n / commsize;
     count_rows = real_count_rows;
     MPI_Barrier(MPI_COMM_WORLD);
     par_Floyd(recv_arr, n, count_rows);
@@ -431,26 +352,11 @@ int main(int argc, char **argv) {
     par_print_matrix(recv_arr, n, count_rows, rank, commsize);
     #endif
 
-    // int *recv_num = calloc(sizeof(int), commsize);
-    // int *recv_ind = calloc(sizeof(int), commsize);
     int *recv_num = calloc(commsize, sizeof(int));
     int *recv_ind = calloc(commsize, sizeof(int));
     if (!recv_num || !recv_ind) {
         MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
-    
-    // rest_rows = n;
-    // count_rows = n / commsize;
-
-    // recv_index[0] = 0;
-    // recv_num[0] = count_rows * n;
-
-    // for(int i = 1; i < commsize; i++) {
-    //     rest_rows -= count_rows;
-    //     count_rows = rest_rows / (commsize - i);
-    //     recv_num[i] = count_rows * n;
-    //     recv_index[i] = recv_index[i - 1] + recv_num[i - 1];
-    // }
 
     #if 0
     if (rank == 0) {
@@ -487,7 +393,6 @@ int main(int argc, char **argv) {
     }
     #endif
 
-    // printf("[%d] step 0\n", rank);
     #if 0
     if (rank == 0) {
         MPI_Gatherv(MPI_IN_PLACE, real_count_rows, MPI_INT, arr, recv_num, recv_index, MPI_INT, 0, MPI_COMM_WORLD);
@@ -497,18 +402,6 @@ int main(int argc, char **argv) {
     }
     #endif
 
-    #if 0
-    if (rank == 0) {
-        printf("arr = %d\n", arr);
-        printf("arr + 8 = %d\n", arr + recv_ind[1]);
-    }
-    #endif
-    
-    // printf("[%d] before gather ok\n", rank)
-    // MPI_Gatherv(recv_arr, /*real_count_rows * n*/ recv_num[rank], MPI_INT, arr, recv_num, recv_ind, MPI_INT, 0, MPI_COMM_WORLD);
-    // printf("[%d] after gather ok\n", rank);
-
-    // my gatherv
     if (rank == 0) {
         for (int i = 0; i < count_rows; i++) {
             for (int j = 0; j < n; j++) {
