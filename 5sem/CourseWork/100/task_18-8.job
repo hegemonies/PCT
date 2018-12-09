@@ -1,7 +1,0 @@
-#PBS -N Floyd-18-8
-#PBS -q debug
-#PBS -l nodes=18:ppn=8
-#PBS -j oe
-
-cd $PBS_O_WORKDIR
-mpiexec ./main 100

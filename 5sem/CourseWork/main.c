@@ -219,7 +219,7 @@ int main(int argc, char **argv) {
     int n;
     int rem;
     int *arr;
-    int *cp_arr;
+    // int *cp_arr;
     int *recv_arr;
     int count_rows;
     int real_count_rows;
@@ -246,7 +246,7 @@ int main(int argc, char **argv) {
         printf("arr:\n");
         print_matrix(arr, n);
         #endif
-
+#if 0
         cp_arr = calloc(n * n, sizeof(int));
         if (!cp_arr) {
             MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
@@ -260,6 +260,7 @@ int main(int argc, char **argv) {
 
         // printf("\nafter floyd cp_arr:\n");
         // print_matrix(cp_arr, n);
+#endif
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
@@ -429,7 +430,7 @@ int main(int argc, char **argv) {
     #endif
 
     t += MPI_Wtime();
-
+#if 0
     if (rank == 0) {
         if (compare(arr, cp_arr, n)) {
             printf("Compare is bad\n");
@@ -437,6 +438,10 @@ int main(int argc, char **argv) {
             printf("Compare is good\n");
             printf("Elapsed time is %.5f sec\n", t);
         }
+    }
+#endif
+    if (rank == 0) {
+        printf("Elapsed time is %.5f sec\n", t);
     }
 
 	MPI_Finalize();
