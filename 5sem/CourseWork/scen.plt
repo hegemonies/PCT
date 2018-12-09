@@ -1,4 +1,6 @@
 set terminal png size 500, 350 font 'Verdana, 10'
+set xlabel "Процессы"
+set ylabel "Ускорение"
 
 set output 'result_100.png'
 plot 'result_100.txt' using 1:2 with linespoints lw 1 lt rgb 'red', \
