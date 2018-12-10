@@ -1,7 +1,0 @@
-#PBS -N Floyd-1-1
-#PBS -q release
-#PBS -l nodes=1:ppn=1
-#PBS -j oe
-
-cd $PBS_O_WORKDIR
-mpiexec ./main 6400

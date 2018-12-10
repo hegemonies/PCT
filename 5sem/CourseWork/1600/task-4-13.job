@@ -1,0 +1,7 @@
+#PBS -N Floyd-13-4
+#PBS -q debug
+#PBS -l nodes=13:ppn=4
+#PBS -j oe
+
+cd $PBS_O_WORKDIR
+mpiexec ./main 1600

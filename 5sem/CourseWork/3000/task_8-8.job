@@ -4,4 +4,4 @@
 #PBS -j oe
 
 cd $PBS_O_WORKDIR
-mpiexec ./main 6400
+mpiexec ./main 3000

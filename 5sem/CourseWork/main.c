@@ -9,19 +9,11 @@
 static int rank;
 static int commsize;
 
+static double mpi_total_time;
+
 int min(int a, int b) {
     return (a < b) ? a : b;
 }
-
-int Min(int A, int B) {
-    int Result = (A < B) ? A : B;
-
-    if((A < 0) && (B >= 0)) Result = B;
-    if((B < 0) && (A >= 0)) Result = A;
-    if((A < 0) && (B < 0)) Result = -1;
-
-    return Result;
-} 
 
 void data_random_init(int *arr, int n) {
     srand(time(0));
@@ -154,7 +146,9 @@ void row_distr(int *arr, int n, int k, int *row) {
         copy(&arr[(k - ind[rank]) * n], n, row);
     }
 
+    mpi_total_time -= MPI_Wtime();
     MPI_Bcast(row, n, MPI_INT, row_rank, MPI_COMM_WORLD);
+    mpi_total_time += MPI_Wtime();
 }
 
 void par_Floyd(int *arr, int n, int count_rows) {
@@ -165,23 +159,6 @@ void par_Floyd(int *arr, int n, int count_rows) {
 
     for (int k = 0; k < n; k++) {
         row_distr(arr, n, k, row);
-
-        #if 0
-        for (int p = 0; p < commsize; p++) {
-            if (p == rank) {
-                printf("rank %d = ", rank);
-                for (int i = 0; i < n; i++) {
-                    if (row[i] == INT_MAX) {
-                        printf("INF\t");
-                    } else {
-                        printf("%d\t", row[i]);
-                    }
-                }
-                printf("\n");
-            }
-            MPI_Barrier(MPI_COMM_WORLD);
-        }
-        #endif
 
         for (int i = 0; i < count_rows; i++) {
             for (int j = 0; j < n; j++) {
@@ -210,6 +187,7 @@ int compare(int *a, int *b, int n) {
 int main(int argc, char **argv) {
     MPI_Init(&argc, &argv);
 
+    mpi_total_time = 0;
     double t = 0;
     t -= MPI_Wtime();
 	
@@ -239,14 +217,15 @@ int main(int argc, char **argv) {
             MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
         }
 
-        data_random_init(arr, n);
-        // dummy_data_init(arr, n);
+        // data_random_init(arr, n);
+        dummy_data_init(arr, n);
 
         #if 0
         printf("arr:\n");
         print_matrix(arr, n);
         #endif
-#if 0
+
+        #if 0
         cp_arr = calloc(n * n, sizeof(int));
         if (!cp_arr) {
             MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
@@ -260,12 +239,12 @@ int main(int argc, char **argv) {
 
         // printf("\nafter floyd cp_arr:\n");
         // print_matrix(cp_arr, n);
-#endif
+        #endif
     }
 
-    MPI_Barrier(MPI_COMM_WORLD);
-
+    mpi_total_time -= MPI_Wtime();
     MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    mpi_total_time += MPI_Wtime();
 
     real_count_rows = n / commsize;
     rem = n % commsize;
@@ -318,19 +297,11 @@ int main(int argc, char **argv) {
 
     rem = old_rem;
     count_rows = real_count_rows;
-
-    #if 0
-    if (rank == 0) {
-        for (int i = 0; i < commsize; i++) {
-            printf("send_num[%d] = %d\n", i, send_num[i]);
-            printf("send_ind[%d] = %d\n", i, send_ind[i]);
-        }
-    }
-    #endif
     
+    mpi_total_time -= MPI_Wtime();
     MPI_Scatterv(arr, send_num, send_ind, MPI_INT, recv_arr, send_num[rank], MPI_INT, 0, MPI_COMM_WORLD); 
+    mpi_total_time += MPI_Wtime();
 
-    MPI_Barrier(MPI_COMM_WORLD);
     #if 0
     if (rank == 0) {
         printf("\nprint before par_Floyd\n");
@@ -340,14 +311,9 @@ int main(int argc, char **argv) {
     #endif
 
     count_rows = real_count_rows;
-    MPI_Barrier(MPI_COMM_WORLD);
+    
     par_Floyd(recv_arr, n, count_rows);
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    #if 0
-    printf("[%d] FLOYD OK\n", rank);
-    #endif
-
+    
     #if 0
     if (rank == 0) {
         printf("\nprint after par_Floyd\n");
@@ -397,30 +363,9 @@ int main(int argc, char **argv) {
     }
     #endif
 
-    #if 0
-    if (rank == 0) {
-        MPI_Gatherv(MPI_IN_PLACE, real_count_rows, MPI_INT, arr, recv_num, recv_index, MPI_INT, 0, MPI_COMM_WORLD);
-    } else {
-        // MPI_Gatherv(recv_arr, recv_num[rank], MPI_INT, arr, recv_num, recv_index, MPI_INT, 0, MPI_COMM_WORLD);
-        MPI_Gatherv(recv_arr, real_count_rows, MPI_INT, NULL, NULL, NULL, MPI_INT, 0, MPI_COMM_WORLD);
-    }
-    #endif
-
-    if (rank == 0) {
-        for (int i = 0; i < count_rows; i++) {
-            for (int j = 0; j < n; j++) {
-                arr[i * n + j] = recv_arr[i * n + j];
-            }
-        }
-        MPI_Status status;
-        for (int i = 1; i < commsize; i++) {
-            MPI_Recv(arr + recv_ind[i], recv_num[i], MPI_INT, i, 0, MPI_COMM_WORLD, &status);
-        }
-    } else {
-        MPI_Send(recv_arr, count_rows * n, MPI_INT, 0, 0, MPI_COMM_WORLD);
-    }
-
-    MPI_Barrier(MPI_COMM_WORLD);
+    mpi_total_time -= MPI_Wtime();
+    MPI_Gatherv(recv_arr, real_count_rows, MPI_INT, arr, recv_num, recv_ind, MPI_INT, 0, MPI_COMM_WORLD);
+    mpi_total_time += MPI_Wtime();
 
     #if 0
     if (rank == 0) {
@@ -429,20 +374,35 @@ int main(int argc, char **argv) {
     }
     #endif
 
-    t += MPI_Wtime();
-#if 0
+
+    #if 0
     if (rank == 0) {
-        if (compare(arr, cp_arr, n)) {
+        if (compare(arr, cp_arr, n) == 0) {
             printf("Compare is bad\n");
         } else {
             printf("Compare is good\n");
             printf("Elapsed time is %.5f sec\n", t);
         }
     }
-#endif
+    #endif
+
+    double total_time_max = 0;
+    MPI_Reduce(&t, &total_time_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+
+    double total_wtime_max = 0;
+    MPI_Reduce(&mpi_total_time, &total_wtime_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+
+
+    t += MPI_Wtime();
+
+    #if 1
     if (rank == 0) {
-        printf("Elapsed time is %.5f sec\n", t);
+        printf("Total time is %.5f sec\n", total_time_max);
+        printf("Total mpi time is %.5f sec\n", total_wtime_max);
+        printf("Total compute time is %.5f sec\n", total_time_max - total_wtime_max);
+        printf("coefficient is %.4f \n", (double)total_wtime_max / (double)(total_time_max - total_wtime_max));
     }
+    #endif
 
 	MPI_Finalize();
 
