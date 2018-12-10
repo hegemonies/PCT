@@ -1,0 +1,15 @@
+Epilog:  nodes=4:ppn=8
+Epilog:  neednodes=4:ppn=8
+Epilog:  walltime=00:20:00
+Total time is 2.56958 sec
+Total mpi time is 0.62300 sec
+Total compute time is 1.94658 sec
+coefficient is 0.3201 
+Epilog:  nodes=4:ppn=8
+Epilog:  neednodes=4:ppn=8
+Epilog:  walltime=00:20:00
+Epilog:  cput=00:00:20
+Epilog:  vmem=0kb
+Epilog:  walltime=00:00:03
+Epilog:  mem=0kb
+Epilog:  energy_used=0

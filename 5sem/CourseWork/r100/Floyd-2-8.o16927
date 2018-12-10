@@ -1,10 +1,10 @@
 Epilog:  nodes=2:ppn=8
 Epilog:  neednodes=2:ppn=8
 Epilog:  walltime=00:20:00
-Total time is -1544437212.94935 sec
-Total mpi time is 0.01415 sec
-Total compute time is -1544437212.96350 sec
-coefficient is -0.0000 
+Total time is 0.01560 sec
+Total mpi time is 0.01520 sec
+Total compute time is 0.00040 sec
+coefficient is 37.7589 
 Epilog:  nodes=2:ppn=8
 Epilog:  neednodes=2:ppn=8
 Epilog:  walltime=00:20:00

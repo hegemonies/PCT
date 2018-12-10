@@ -381,19 +381,18 @@ int main(int argc, char **argv) {
             printf("Compare is bad\n");
         } else {
             printf("Compare is good\n");
-            printf("Elapsed time is %.5f sec\n", t);
+            // printf("Elapsed time is %.5f sec\n", t);
         }
     }
     #endif
+
+    t += MPI_Wtime();
 
     double total_time_max = 0;
     MPI_Reduce(&t, &total_time_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
 
     double total_wtime_max = 0;
     MPI_Reduce(&mpi_total_time, &total_wtime_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
-
-
-    t += MPI_Wtime();
 
     #if 1
     if (rank == 0) {
