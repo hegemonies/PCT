@@ -18,4 +18,4 @@ plot 'N=100' with linespoints lw 1 lt rgb 'red', \
     'N=1600' with linespoints lw 1 lt rgb 'green', \
     'N=3000' with linespoints lw 1 lt rgb 'yellow', \
     'N=4000' with linespoints lw 1 lt rgb 'pink', \
-    'linear.txt' with linespoints lw 1 lt rgb 'black'
+    'linear' with linespoints lw 1 lt rgb 'black'
