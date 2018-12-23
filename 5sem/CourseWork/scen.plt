@@ -1,6 +1,7 @@
-set terminal png size 800, 600 font 'Times New Roman, 10'
+set terminal png size 800, 700 font 'Times New Roman, 14'
 
 set key top left
+set pointsize 2
 
 set ylabel 'Ускорение'
 set xlabel 'Количество процессов'
@@ -18,4 +19,4 @@ plot 'N=100' with linespoints lw 1 lt rgb 'red', \
     'N=1600' with linespoints lw 1 lt rgb 'green', \
     'N=3000' with linespoints lw 1 lt rgb 'yellow', \
     'N=4000' with linespoints lw 1 lt rgb 'pink', \
-    'linear' with linespoints lw 1 lt rgb 'black'
+    'Линейное' with linespoints lw 1 lt rgb 'black'
